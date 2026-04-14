@@ -1,4 +1,5 @@
 import 'package:app/core/network/network_result.dart';
+import 'package:app/core/utils/date_formatter.dart';
 import 'package:app/src/domain/entities/task_entity.dart';
 import 'package:app/src/domain/use_cases/get_remote_tasks_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,14 +16,34 @@ class TaskCubit extends Cubit<TaskState> {
 
   TaskCubit(this._getTasks) : super(const TaskState.initial());
 
+  DateTime? _startDate;
+  DateTime? _endDate;
+
+  String _searchQuery = '';
+  List<TaskEntity> _allTasks = [];
+
+  void setSearchQuery(String query) {
+    _searchQuery = query.toLowerCase().trim();
+    _applyFilters();
+  }
+
+  void setDateRange(DateTime start, DateTime end) {
+    _startDate = start;
+    _endDate = end;
+    loadTasks();
+  }
+
   Future<void> loadTasks() async {
     emit(const TaskState.loading());
+
+    final start = _startDate ?? DateTime(2026, 4, 1);
+    final end = _endDate ?? DateTime(2026, 4, 30);
 
     try {
       final resp = await _getTasks(
         params: {
-          "period_start": "2026-04-01",
-          "period_end": "2026-04-30",
+          "period_start": DateFormatter.toYMD(start),
+          "period_end": DateFormatter.toYMD(end),
           "period_key": "month",
           "requested_mo_id": "42",
           "behaviour_key": "task,kpi_task",
@@ -31,20 +52,37 @@ class TaskCubit extends Cubit<TaskState> {
           "auth_user_id": "40",
         },
       );
+
       if (resp is Success) {
-        if (resp.data?.isEmpty == true) {
+        _allTasks = resp.data ?? [];
+
+        if (_allTasks.isEmpty) {
           emit(const TaskState.empty());
           return;
         }
-        final grouped = _mapTasks(resp.data ?? []);
-        emit(TaskState.loaded(grouped));
+
+        _applyFilters();
       }
     } catch (e) {
-      emit(_Error(e.toString()));
+      emit(TaskState.error(e.toString()));
     }
   }
 
-  /// 🔹 Сортировка + группировка
+  void _applyFilters() {
+    final filtered = _allTasks.where((task) {
+      final name = (task.name ?? '').toLowerCase();
+      return name.contains(_searchQuery);
+    }).toList();
+
+    if (filtered.isEmpty) {
+      emit(const TaskState.empty());
+      return;
+    }
+
+    final grouped = _mapTasks(filtered);
+    emit(TaskState.loaded(grouped));
+  }
+
   Map<int, List<TaskEntity>> _mapTasks(List<TaskEntity> tasks) {
     final Map<int, List<TaskEntity>> grouped = {};
 

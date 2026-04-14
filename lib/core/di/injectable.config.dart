@@ -18,6 +18,7 @@ import 'package:app/src/domain/repositories/task_repository.dart' as _i890;
 import 'package:app/src/domain/use_cases/get_remote_tasks_use_case.dart'
     as _i167;
 import 'package:app/src/presentation/cubit/task_cubit.dart' as _i685;
+import 'package:app/src/presentation/cubit/theme_cubit.dart' as _i444;
 import 'package:dio/dio.dart' as _i361;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
@@ -37,6 +38,7 @@ extension GetItInjectableX on _i174.GetIt {
       preResolve: true,
     );
     gh.lazySingleton<_i974.Logger>(() => registerModule.logger);
+    gh.lazySingleton<_i444.ThemeCubit>(() => _i444.ThemeCubit());
     gh.lazySingleton<_i206.AppBlocObserver>(
       () => registerModule.blocObserver(gh<_i974.Logger>()),
     );
