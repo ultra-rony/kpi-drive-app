@@ -1,0 +1,13 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - bricks/**
+    - lib/generated/**
+  errors:
+    invalid_annotation_target: ignore
+    library_private_types_in_public_api: ignore
+
+linter:
+  rules:
+    - prefer_const_constructors
