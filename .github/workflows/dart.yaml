@@ -18,6 +18,9 @@ jobs:
         with:
           flutter-version: '3.41.1'
 
+      - name: Create .env file
+        run: cp .env.example .env
+
       - name: Install dependencies
         run: flutter pub get
 
