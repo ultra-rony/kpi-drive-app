@@ -17,11 +17,3 @@
 - ⚡ Debounce обновления при перемещении задач
 
 ---
-
-## 🎥 Демо
-
-<p align="center">
-  <a href="https://github.com/ultra-rony/kpi-drive-app/blob/main/videos/1.mov?raw=true">
-    ▶️ Click to watch demo video
-  </a>
-</p>
