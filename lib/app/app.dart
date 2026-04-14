@@ -21,20 +21,28 @@ class App extends StatelessWidget {
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
-          return MaterialApp.router(
-            title: "KPI-DRIVE",
-            locale: const Locale('ru'),
-            supportedLocales: const [Locale('ru')],
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            debugShowCheckedModeBanner: false,
-            routerConfig: _appRouter.config(),
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: themeMode,
+          final theme = themeMode == ThemeMode.dark
+              ? AppTheme.dark
+              : AppTheme.light;
+          return AnimatedTheme(
+            data: theme,
+            duration: const Duration(seconds: 1),
+            curve: Curves.easeInOut,
+            child: MaterialApp.router(
+              title: "KPI-DRIVE",
+              locale: const Locale('ru'),
+              supportedLocales: const [Locale('ru')],
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              debugShowCheckedModeBanner: false,
+              routerConfig: _appRouter.config(),
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: themeMode,
+            ),
           );
         },
       ),

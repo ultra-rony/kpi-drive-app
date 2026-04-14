@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:app/core/network/network_result.dart';
 import 'package:app/core/utils/date_formatter.dart';
 import 'package:app/src/domain/entities/task_entity.dart';
 import 'package:app/src/domain/use_cases/get_remote_tasks_use_case.dart';
+import 'package:app/src/domain/use_cases/update_remote_task_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -13,14 +16,18 @@ part 'task_cubit.freezed.dart';
 @LazySingleton()
 class TaskCubit extends Cubit<TaskState> {
   final GetRemoteTasksUseCase _getTasks;
+  final UpdateRemoteTaskUseCase _updateRemoteTaskUseCase;
 
-  TaskCubit(this._getTasks) : super(const TaskState.initial());
+  TaskCubit(this._getTasks, this._updateRemoteTaskUseCase)
+    : super(const TaskState.initial());
 
   DateTime? _startDate;
   DateTime? _endDate;
 
   String _searchQuery = '';
   List<TaskEntity> _allTasks = [];
+
+  Timer? _updateDebounce;
 
   void setSearchQuery(String query) {
     _searchQuery = query.toLowerCase().trim();
@@ -97,5 +104,35 @@ class TaskCubit extends Cubit<TaskState> {
     }
 
     return grouped;
+  }
+
+  Future<void> updateTaskField({
+    required int indicatorId,
+    required String fieldName,
+    required dynamic value,
+  }) async {
+    _updateDebounce?.cancel();
+
+    _updateDebounce = Timer(const Duration(seconds: 1), () async {
+      try {
+        await _updateRemoteTaskUseCase(
+          params: {
+            "period_start": DateFormatter.toYMD(
+              _startDate ?? DateTime(2026, 4, 1),
+            ),
+            "period_end": DateFormatter.toYMD(
+              _endDate ?? DateTime(2026, 4, 30),
+            ),
+            "period_key": "month",
+            "indicator_to_mo_id": indicatorId,
+            "field_name": fieldName,
+            "field_value": value,
+            "auth_user_id": "40",
+          },
+        );
+      } catch (e) {
+        emit(TaskState.error(e.toString()));
+      }
+    });
   }
 }

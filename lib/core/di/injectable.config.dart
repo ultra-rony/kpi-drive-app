@@ -17,6 +17,8 @@ import 'package:app/src/data/repositories/task_repository_impl.dart' as _i23;
 import 'package:app/src/domain/repositories/task_repository.dart' as _i890;
 import 'package:app/src/domain/use_cases/get_remote_tasks_use_case.dart'
     as _i167;
+import 'package:app/src/domain/use_cases/update_remote_task_use_case.dart'
+    as _i498;
 import 'package:app/src/presentation/cubit/task_cubit.dart' as _i685;
 import 'package:app/src/presentation/cubit/theme_cubit.dart' as _i444;
 import 'package:dio/dio.dart' as _i361;
@@ -52,8 +54,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i167.GetRemoteTasksUseCase>(
       () => _i167.GetRemoteTasksUseCase(gh<_i890.TaskRepository>()),
     );
+    gh.factory<_i498.UpdateRemoteTaskUseCase>(
+      () => _i498.UpdateRemoteTaskUseCase(gh<_i890.TaskRepository>()),
+    );
     gh.lazySingleton<_i685.TaskCubit>(
-      () => _i685.TaskCubit(gh<_i167.GetRemoteTasksUseCase>()),
+      () => _i685.TaskCubit(
+        gh<_i167.GetRemoteTasksUseCase>(),
+        gh<_i498.UpdateRemoteTaskUseCase>(),
+      ),
     );
     return this;
   }

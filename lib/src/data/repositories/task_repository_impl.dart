@@ -38,4 +38,24 @@ class TaskRepositoryImpl implements TaskRepository {
       return Failure('Unexpected error: $e');
     }
   }
+
+  @override
+  Future<Result<int?>> updateTask(Map<String, dynamic> map) async {
+    try {
+      final httpResponse = await _taskRemoteDataSource.updateTask(map);
+      if (httpResponse.statusCode == 200 && httpResponse.data != null) {
+        if (httpResponse.data == null) {
+          return const Failure('No tasks found in response');
+        }
+        return Success(httpResponse.data['DATA']['indicator_to_mo_hst_id']);
+      }
+      return Failure(
+        'Unexpected response: ${httpResponse.statusCode} ${httpResponse.data}',
+      );
+    } on DioException catch (e) {
+      return Failure('Dio error: ${e.response?.statusCode ?? ''} ${e.message}');
+    } catch (e) {
+      return Failure('Unexpected error: $e');
+    }
+  }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/core/utils/task_group_name.dart';
 import 'package:app/src/data/models/task_board_model.dart';
 import 'package:app/src/domain/entities/task_entity.dart';
@@ -22,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   late AppFlowyBoardScrollController _boardScrollController;
 
   bool _isSearching = false;
+
   final TextEditingController _searchController = TextEditingController();
 
   Color getPerformanceColor(int value) {
@@ -39,12 +42,52 @@ class _HomePageState extends State<HomePage> {
       onMoveGroup: (fromGroupId, fromIndex, toGroupId, toIndex) {
         debugPrint('Move group');
       },
-      onMoveGroupItem: (groupId, fromIndex, toIndex) {
-        debugPrint('Reorder inside group');
+      onMoveGroupItem: (groupId, fromIndex, toIndex) async {
+        final cubit = context.read<TaskCubit>();
+
+        final group = _controller.getGroupController(groupId);
+        if (group == null) return;
+
+        if (fromIndex < 0 || fromIndex >= group.items.length) return;
+
+        final item = group.items[fromIndex];
+        if (item is! TaskBoardModel) return;
+
+        final taskId = item.task.indicatorToMoId;
+        if (taskId == null) return;
+
+        await cubit.updateTaskField(
+          indicatorId: taskId,
+          fieldName: "order",
+          value: toIndex,
+        );
       },
-      onMoveGroupItemToGroup: (fromGroupId, fromIndex, toGroupId, toIndex) {
-        debugPrint('Move between groups');
-      },
+      onMoveGroupItemToGroup:
+          (fromGroupId, fromIndex, toGroupId, toIndex) async {
+            final cubit = context.read<TaskCubit>();
+
+            final task =
+                _controller.getGroupController(fromGroupId)?.items[fromIndex]
+                    as TaskBoardModel;
+
+            final taskId = task.task.indicatorToMoId!;
+            final oldParentId = task.task.parentId;
+            final newParentId = int.parse(toGroupId);
+
+            if (oldParentId == newParentId) return;
+
+            await cubit.updateTaskField(
+              indicatorId: taskId,
+              fieldName: "parent_id",
+              value: newParentId,
+            );
+
+            await cubit.updateTaskField(
+              indicatorId: taskId,
+              fieldName: "order",
+              value: toIndex,
+            );
+          },
     );
 
     context.read<TaskCubit>().loadTasks();

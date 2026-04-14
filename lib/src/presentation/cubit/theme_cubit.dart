@@ -4,7 +4,7 @@ import 'package:injectable/injectable.dart';
 
 @LazySingleton()
 class ThemeCubit extends Cubit<ThemeMode> {
-  ThemeCubit() : super(ThemeMode.light);
+  ThemeCubit() : super(ThemeMode.dark);
 
   void toggleTheme() {
     emit(state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
