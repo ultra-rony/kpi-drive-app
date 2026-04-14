@@ -38,3 +38,7 @@ ios_rebuild:
 xcode:
 	@echo "🍎 Открываем xcode"
 	open ios/Runner.xcworkspace
+
+run_web:
+	@echo "🌐 Запуск Flutter Web (Chrome без web security)"
+	flutter run -d chrome --web-browser-flag "--disable-web-security"
