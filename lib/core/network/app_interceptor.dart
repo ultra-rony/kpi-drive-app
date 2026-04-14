@@ -13,6 +13,7 @@ class AppInterceptor extends Interceptor {
     if (Constants.bearerToken != null && Constants.bearerToken!.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer ${Constants.bearerToken}';
     }
+    options.contentType = Headers.formUrlEncodedContentType;
 
     _logger.i('➡️ [${options.method}] ${options.uri}');
     _logger.i('Headers: ${options.headers}');

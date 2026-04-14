@@ -16,13 +16,7 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   Future<Response<dynamic>> getTasks(Map<String, dynamic> map) async {
     return await _dio.post(
       "${Constants.baseUrl}/_api/indicators/get_mo_indicators",
-        options: Options(
-          headers: {
-            "Authorization": "Bearer 5c3964b8e3ee4755f2cc0febb851e2f8",
-          },
-          contentType: Headers.formUrlEncodedContentType,
-        ),
-      data: map
+      data: map,
     );
   }
 }
