@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:app/core/utils/task_group_name.dart';
-import 'package:app/src/data/models/task_board_model.dart';
+import 'package:app/src/presentation/models/task_board_model.dart';
 import 'package:app/src/domain/entities/task_entity.dart';
 import 'package:app/src/presentation/cubit/task_cubit.dart';
 import 'package:app/src/presentation/cubit/theme_cubit.dart';
