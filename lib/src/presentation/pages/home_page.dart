@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:app/core/utils/task_group_name.dart';
 import 'package:app/src/presentation/models/task_board_model.dart';
 import 'package:app/src/domain/entities/task_entity.dart';
 import 'package:app/src/presentation/cubit/task_cubit.dart';
@@ -58,34 +57,32 @@ class _HomePageState extends State<HomePage> {
 
         await cubit.updateTaskField(
           indicatorId: taskId,
-          fieldName: "order",
-          value: toIndex,
+          fieldNames: ["order"],
+          values: [toIndex],
         );
       },
       onMoveGroupItemToGroup:
           (fromGroupId, fromIndex, toGroupId, toIndex) async {
             final cubit = context.read<TaskCubit>();
 
-            final task =
-                _controller.getGroupController(fromGroupId)?.items[fromIndex]
-                    as TaskBoardModel;
+            final toGroup = _controller.getGroupController(toGroupId);
+            if (toGroup == null) return;
 
-            final taskId = task.task.indicatorToMoId!;
-            final oldParentId = task.task.parentId;
-            final newParentId = int.parse(toGroupId);
+            final items = toGroup.items;
 
-            if (oldParentId == newParentId) return;
+            if (toIndex < 0 || toIndex >= items.length) return;
 
-            await cubit.updateTaskField(
-              indicatorId: taskId,
-              fieldName: "parent_id",
-              value: newParentId,
-            );
+            final item = items[toIndex];
+
+            if (item is! TaskBoardModel) return;
+
+            final taskId = item.task.indicatorToMoId;
+            if (taskId == null) return;
 
             await cubit.updateTaskField(
               indicatorId: taskId,
-              fieldName: "order",
-              value: toIndex,
+              fieldNames: ["parent_id", "order"],
+              values: [int.parse(toGroupId), toIndex],
             );
           },
     );
@@ -227,10 +224,14 @@ class _HomePageState extends State<HomePage> {
                   boardScrollController: _boardScrollController,
                   groupConstraints: const BoxConstraints.tightFor(width: 280),
                   headerBuilder: (context, groupData) {
+                    final groupId = int.tryParse(groupData.id) ?? 0;
+
+                    final cubit = context.read<TaskCubit>();
+                    final name = cubit.getGroupNameById(groupId);
                     return Padding(
                       padding: const EdgeInsets.all(8),
                       child: Text(
-                        int.tryParse(groupData.id)?.groupName ?? "",
+                        name ?? "",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(

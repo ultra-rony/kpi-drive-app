@@ -27,8 +27,6 @@ class TaskCubit extends Cubit<TaskState> {
   String _searchQuery = '';
   List<TaskEntity> _allTasks = [];
 
-  Timer? _updateDebounce;
-
   void setSearchQuery(String query) {
     _searchQuery = query.toLowerCase().trim();
     _applyFilters();
@@ -52,7 +50,7 @@ class TaskCubit extends Cubit<TaskState> {
           "period_start": DateFormatter.toYMD(start),
           "period_end": DateFormatter.toYMD(end),
           "period_key": "month",
-          "requested_mo_id": "42",
+          "requested_mo_id": "2",
           "behaviour_key": "task,kpi_task",
           "with_result": "false",
           "response_fields": "name,indicator_to_mo_id,parent_id,order",
@@ -108,31 +106,38 @@ class TaskCubit extends Cubit<TaskState> {
 
   Future<void> updateTaskField({
     required int indicatorId,
-    required String fieldName,
-    required dynamic value,
+    required List<String> fieldNames,
+    required List<dynamic> values,
   }) async {
-    _updateDebounce?.cancel();
+    try {
+      await _updateRemoteTaskUseCase(
+        params: {
+          "period_start": DateFormatter.toYMD(
+            _startDate ?? DateTime(2026, 4, 1),
+          ),
+          "period_end": DateFormatter.toYMD(
+            _endDate ?? DateTime(2026, 4, 30),
+          ),
+          "period_key": "month",
+          "indicator_to_mo_id": indicatorId,
+          "field_name[]": fieldNames,
+          "field_value[]": values,
+          "auth_user_id": "40",
+        },
+      );
+    } catch (e) {
+      emit(TaskState.error(e.toString()));
+    }
+  }
 
-    _updateDebounce = Timer(const Duration(seconds: 1), () async {
-      try {
-        await _updateRemoteTaskUseCase(
-          params: {
-            "period_start": DateFormatter.toYMD(
-              _startDate ?? DateTime(2026, 4, 1),
-            ),
-            "period_end": DateFormatter.toYMD(
-              _endDate ?? DateTime(2026, 4, 30),
-            ),
-            "period_key": "month",
-            "indicator_to_mo_id": indicatorId,
-            "field_name": fieldName,
-            "field_value": value,
-            "auth_user_id": "40",
-          },
-        );
-      } catch (e) {
-        emit(TaskState.error(e.toString()));
-      }
-    });
+  String? getGroupNameById(int groupId) {
+    try {
+      final task = _allTasks.firstWhere(
+            (t) => t.indicatorToMoId == groupId,
+      );
+      return task.name;
+    } catch (_) {
+      return null;
+    }
   }
 }
